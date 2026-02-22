@@ -1,0 +1,107 @@
+name: dev-app
+description: Java 17 / Spring Boot MVC (Gradle) 自律開発ピース
+max_movements: 50
+initial_movement: design
+
+personas:
+  architect:
+    prompt: |
+      あなたは Java / Spring Boot のシニアアーキテクトです。
+      「Google Todo のようなシンプルさ」を追求し、クリーンな設計を行います。
+  developer:
+    prompt: |
+      あなたは Java 17 と Spring Boot 3.x (Gradle) のエキスパートです。
+      Thymeleaf を使用した MVC 実装と PostgreSQL 17 向けのデータアクセス層を構築します。
+  reviewer:
+    prompt: |
+      あなたはシニアエンジニアです。
+      コードの保守性、セキュリティ、および Java 17 / Gradle の規約準拠を厳格にチェックします。
+  tester:
+    prompt: |
+      あなたは QA エンジニアです。
+      `./gradlew test` を用いたユニットテスト実行と、DB接続の整合性検証を担当します。
+  reporter:
+    prompt: |
+      あなたは技術ドキュメント作成の専門家です。
+      Mermaid 図を `mmdc` コマンドで PNG 化し、設計書に埋め込んで顧客向けの最終レポートを完成させます。
+
+policies:
+  app-policy: |
+    - 言語: Java 17 / ビルドツール: Gradle を厳守。
+    - 構成: Spring Boot MVC (Thymeleaf) 統合。
+    - DB: PostgreSQL 17 (Cloud SQL) を使用。
+    - デザイン: Google Todo をベンチマークとした極シンプルな UI。
+    - 配置: 全てのコードは `/src-app`、ドキュメントは `/docs` に配置。
+
+knowledge:
+  project-layout: project-structure
+  customer-reqs: requirements
+
+movements:
+  - name: design
+    persona: architect
+    knowledge: [project-layout, customer-reqs]
+    policy: app-policy
+    edit: true
+    allowed_tools: [Read, Glob, Bash, Write, WebSearch]
+    instruction: |
+      顧客要求に基づき、/docs/app-design.md に設計書を作成してください。
+      - Mermaid 記法で ER図、画面遷移図、シーケンス図を記述。
+      - 各図は別ファイル（*.mmd）としても保存すること。
+      - Gradle のプロジェクト構成（依存関係）を決定すること。
+    rules:
+      - condition: "設計書と *.mmd ファイルが生成された"
+        next: report
+      - condition: "要件不明"
+        next: ABORT
+
+  - name: report
+    persona: reporter
+    policy: app-policy
+    edit: true
+    allowed_tools: [Read, Glob, Bash, Write, Edit]
+    instruction: |
+      1. `/docs` 内の *.mmd ファイルを `mmdc` コマンドで PNG 化してください。
+      2. 生成された PNG を `app-design.md` に埋め込み、見栄えを整えてください。
+    rules:
+      - condition: "設計書の PNG 埋め込みとドキュメント整形が完了した"
+        next: implement
+      - condition: "画像変換に失敗"
+        next: ABORT
+
+  - name: implement
+    persona: developer
+    knowledge: [project-layout, customer-reqs]
+    policy: app-policy
+    edit: true
+    allowed_tools: [Read, Glob, Bash, Write, Edit]
+    instruction: |
+      /docs/app-design.md に基づき、/src-app に Gradle プロジェクトを構築・実装してください。
+      必ず Gradle Wrapper (`gradlew`) を含めて作成すること。
+    rules:
+      - condition: "ビルド可能な全コードの実装が完了した"
+        next: review
+
+  - name: review
+    persona: reviewer
+    knowledge: [project-layout, customer-reqs]
+    edit: true
+    allowed_tools: [Read, Glob, Edit, Bash]
+    instruction: "実装されたコードと Gradle 設定をレビューし、必要なら修正してください。"
+    rules:
+      - condition: "レビューをパスした"
+        next: test
+      - condition: "要修正"
+        next: implement
+
+  - name: test
+    persona: tester
+    knowledge: [project-layout]
+    edit: true
+    allowed_tools: [Read, Glob, Bash]
+    instruction: "`./gradlew test` を実行し、全テストをパスさせてください。"
+    rules:
+      - condition: "テスト成功"
+        next: COMPLETE
+      - condition: "テスト失敗"
+        next: implement

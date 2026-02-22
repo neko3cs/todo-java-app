@@ -1,0 +1,122 @@
+name: dev-infra
+description: Google Cloud (Terraform) IaC 専門開発ピース
+max_movements: 50
+initial_movement: design
+
+personas:
+  implementer:
+    prompt: |
+      あなたは Terraform と Google Cloud の実装スペシャリストです。
+      HCLコードの記述、リソースの依存関係の整理、および `gcloud` コマンドによる環境確認が得意です。
+  reviewer:
+    prompt: |
+      あなたは Terraform と Google Cloud アーキテクチャのエキスパートです。
+      セキュリティ、保守性、および Google Cloud のベストプラクティスの観点からコードを厳格にレビューします。
+  tester:
+    prompt: |
+      あなたは IaC の品質保証スペシャリストです。
+      `terraform plan` の結果検証や、構築後のリソースが設計通り（閉域網設定など）になっているか Bash 等を用いてテストします。
+  reporter:
+    prompt: |
+      あなたは技術ドキュメント作成の専門家です。
+      提供された情報から高品質な設計書を作成し、Mermaid図を適切に埋め込みます。
+
+policies:
+  infra-policy: |
+    - Cloud Run: 閉域網（Ingress=internal-and-cloud-load-balancing）を徹底する。
+    - Cloud SQL: PostgreSQL 17を使用。Private IPによる接続とし、Public IPは無効化する。
+    - Cloud SQL Admin API を有効化し、Cloud SQL Studio を利用可能にする。
+    - Load Balancer: HTTPS通信とし、Cloud Armor (WAF) で保護する。
+    - プロジェクトIDはアクティブな `gcloud` 設定から取得し、ハードコードしない。
+
+knowledge:
+  project-layout: project-structure
+  customer-reqs: requirements
+
+movements:
+  - name: design
+    persona: implementer
+    knowledge: [project-layout, customer-reqs]
+    policy: infra-policy
+    edit: true
+    allowed_tools: [Read, Glob, Grep, Bash, WebSearch, WebFetch, Write]
+    instruction: |
+      以下のアーキテクチャに基づき、Terraformの構成案を作成してください。
+      設計書は Markdown 形式で出力し、Mermaid記法（flowchart, graph, sequenceなど）を用いて図を記述してください。
+      図の記述は *.mmd ファイルとして別途保存してください。
+
+      1. Load Balancer + WAF (Cloud Armor)
+      2. 閉域網内の Cloud Run
+      3. 閉域網内の Cloud SQL (PostgreSQL 17)
+      4. Cloud SQL Admin API の有効化設定
+
+      設計書と .mmd ファイルの出力が完了したら、次のフェーズに進んでください。
+    rules:
+      - condition: "設計案とMermaid図がMarkdownファイルとして出力された"
+        next: report
+      - condition: "情報不足で設計できない"
+        next: ABORT
+
+  - name: report
+    persona: reporter
+    knowledge: [project-layout, customer-reqs]
+    policy: infra-policy
+    edit: true
+    allowed_tools: [Read, Glob, Bash, Write, Edit]
+    instruction: |
+      designフェーズで作成された設計書とMermaid図（*.mmdファイル）を受け取りました。
+
+      1. `.mmd` ファイルが存在すれば、`@mermaid-js/mermaid-cli` を使用して PNG 画像を生成してください。
+         コマンド例: `mmdc -i input.mmd -o output.png`
+         もし `mmdc` が見つからない場合は `npm install -g @mermaid-js/mermaid-cli` を実行してインストールしてください。
+      2. 生成されたPNG画像をMarkdown形式の設計書に適切に埋め込んでください。
+      3. 最終的な設計書ファイルを `design-report.md` として保存してください。
+    rules:
+      - condition: "Mermaid図がPNG化され、設計書に埋め込まれた最終レポートが生成された"
+        next: implement
+      - condition: "Mermaid図の生成や埋め込みに失敗した"
+        next: ABORT
+
+  - name: implement
+    persona: implementer
+    knowledge: [project-layout, customer-reqs]
+    policy: infra-policy
+    edit: true
+    allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+    instruction: "設計に基づき、Terraformコード (.tfファイル) を作成・修正してください。"
+    rules:
+      - condition: "コードの記述が完了した"
+        next: review
+
+  - name: review
+    persona: reviewer
+    knowledge: [project-layout, customer-reqs]
+    policy: infra-policy
+    edit: true
+    allowed_tools: [Read, Glob, Grep, Bash, Edit]
+    instruction: |
+      実装されたコードをレビューしてください。特に以下の点を重点的にチェックします：
+      - Cloud Run/SQL が意図せず公開されていないか
+      - WAFの設定は適切か
+      - PostgreSQLのバージョンは17か
+      修正が必要な場合は直接コードを修正するか、具体的な指示を出してください。
+    rules:
+      - condition: "レビューをパスし、コードが最適化された"
+        next: test
+      - condition: "大幅な再設計が必要"
+        next: implement
+
+  - name: test
+    persona: tester
+    knowledge: [project-layout, customer-reqs]
+    policy: infra-policy
+    edit: true
+    allowed_tools: [Read, Glob, Grep, Bash]
+    instruction: |
+      `terraform plan` を実行して構成の整合性を確認してください。
+      また、セキュリティ設定（隔離環境）がポリシーに準拠しているか静的解析やコマンドで検証してください。
+    rules:
+      - condition: "すべてのテスト・検証をパスした"
+        next: COMPLETE
+      - condition: "修正すべき問題が見つかった"
+        next: implement
