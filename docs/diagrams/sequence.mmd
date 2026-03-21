@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant Browser
+    participant Controller
+    participant Service
+    participant Repository
+    participant DB
+
+    Browser->>Controller: POST /todos (form data)
+    Controller->>Service: createTodo(dto)
+    Service->>Repository: save(todoEntity)
+    Repository->>DB: INSERT todo
+    DB-->>Repository: OK (id)
+    Repository-->>Service: savedEntity
+    Service-->>Controller: result/redirect
+    Controller-->>Browser: 302 Redirect -> /todos/{id} or /todos
+
+    Note over Controller,Service: validation (title required) before save

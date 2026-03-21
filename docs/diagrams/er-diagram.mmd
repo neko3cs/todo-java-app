@@ -1,0 +1,27 @@
+erDiagram
+    TODO {
+        UUID id PK "Primary key"
+        string title "Required"
+        text description
+        datetime due_date
+        string status "TODO | IN_PROGRESS | DONE"
+        datetime created_at
+        datetime updated_at
+        int priority
+    }
+
+    USER {
+        UUID id PK
+        string username
+        string email
+    }
+
+    TAG {
+        UUID id PK
+        string name
+    }
+
+    USER ||--o{ TODO : "owns"
+    TODO ||--o{ TAG : "tagged_with"
+
+    %% Notes: priority and relations optional; UUID used for portability

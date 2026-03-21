@@ -1,0 +1,17 @@
+flowchart LR
+    A[Todo List] --> B[Create Todo]
+    B --> A
+    A --> C[Detail View]
+    C --> D[Edit Todo]
+    D --> C
+    C --> A
+    A --> E[Delete]
+
+    style A fill:#f9f,stroke:#333,stroke-width:1px
+    style B fill:#bbf
+    style C fill:#bfb
+    style D fill:#ffd
+    style E fill:#fdd
+
+    click B "./todos/new" "Create a new todo"
+    click D "./todos/edit" "Edit existing todo"
