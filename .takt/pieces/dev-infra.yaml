@@ -4,14 +4,10 @@ max_movements: 50
 initial_movement: design
 
 personas:
-  implementer:
-    prompt: "Terraform and Google Cloud implementer: author HCL and validate resources with gcloud"
-  reviewer:
-    prompt: "Terraform reviewer: check security, maintainability, and GCP best practices"
-  tester:
-    prompt: "IaC QA specialist: run terraform plan and verify closed-network configuration"
-  reporter:
-    prompt: "Documentation expert: embed Mermaid diagrams into Markdown reports"
+  implementer: "Terraform and Google Cloud implementer: author HCL and validate resources with gcloud"
+  reviewer: "Terraform reviewer: check security, maintainability, and GCP best practices"
+  tester: "IaC QA specialist: run terraform plan and verify closed-network configuration"
+  reporter: "Documentation expert: embed Mermaid diagrams into Markdown reports"
 
 policies:
   language: "Terraform"
@@ -20,25 +16,18 @@ policies:
   db: "Cloud SQL (PostgreSQL 17, Private IP)"
   ui_guideline: "n/a"
   layout: "/src-infra for Terraform .tf files"
-  infra-policy:
-    language: "Terraform"
-    build: "N/A"
-    framework: "Google Cloud Platform / Terraform"
-    db: "Cloud SQL (PostgreSQL 17, Private IP)"
-    ui_guideline: "n/a"
-    layout: "/src-infra for Terraform .tf files"
+  infra-policy: "infra-policy"
 
 knowledge:
-  project-layout: project-structure
-  customer-reqs: requirements
+  project-structure: project-structure
+  requirements: requirements
 
 movements:
   - name: design
     persona: implementer
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     policy: infra-policy
     edit: true
-    allowed_tools: [Read, Glob, Grep, Bash, WebSearch, WebFetch, Write]
     timeout_minutes: 120
     on_failure: "ABORT"
     instruction: |
@@ -60,19 +49,16 @@ movements:
 
   - name: report
     persona: reporter
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     policy: infra-policy
     edit: true
-    allowed_tools: [Read, Glob, Bash, Write]
     timeout_minutes: 30
     on_failure: "ABORT"
     install_hint: |
       If `mmdc` is not available, prefer containerized execution in CI or developer machines. Examples:
       - POSIX/CI: `docker run --rm -v "$(pwd)":/data minified/mmdc mmdc -i input.mmd -o output.png`
-        Ensure the CI job uses the repository workspace as the container volume (e.g. `$CI_WORKSPACE` mounted to `/data`).
       - Windows (PowerShell): adjust volume mapping, e.g. `docker run --rm -v ${PWD}:/data minified/mmdc mmdc -i input.mmd -o output.png`.
       - Alternatively, install globally via npm: `npm install -g @mermaid-js/mermaid-cli`.
-      Note: ensure CI provides necessary environment variables and that Docker is available in the runner.
     instruction: |
       designフェーズで作成された設計書とMermaid図（*.mmdファイル）を受け取りました。
 
@@ -89,10 +75,9 @@ movements:
 
   - name: implement
     persona: implementer
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     policy: infra-policy
     edit: true
-    allowed_tools: [Read, Glob, Grep, Bash, Write]
     timeout_minutes: 240
     on_failure: "ABORT"
     instruction: "設計に基づき、Terraformコード (.tfファイル) を作成・修正してください。"
@@ -102,10 +87,9 @@ movements:
 
   - name: review
     persona: reviewer
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     policy: infra-policy
     edit: true
-    allowed_tools: [Read, Glob, Grep, Bash, Edit]
     timeout_minutes: 60
     on_failure: "ABORT"
     instruction: |
@@ -122,10 +106,9 @@ movements:
 
   - name: test
     persona: tester
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     policy: infra-policy
     edit: true
-    allowed_tools: [Read, Glob, Grep, Bash]
     timeout_minutes: 30
     on_failure: "ABORT"
     instruction: |

@@ -4,16 +4,11 @@ max_movements: 50
 initial_movement: design
 
 personas:
-  architect:
-    prompt: "Java/Spring Boot senior architect: design clean Spring MVC applications"
-  developer:
-    prompt: "Java 17 / Spring Boot developer: implement MVC, Thymeleaf, PostgreSQL"
-  reviewer:
-    prompt: "Senior engineer reviewer: check maintainability, security, and Gradle conventions"
-  tester:
-    prompt: "QA engineer: run ./gradlew test and validate DB connectivity"
-  reporter:
-    prompt: "Documentation expert: convert Mermaid diagrams to PNG with mmdc and embed into reports"
+  architect: "Java/Spring Boot senior architect: design clean Spring MVC applications"
+  developer: "Java 17 / Spring Boot developer: implement MVC, Thymeleaf, PostgreSQL"
+  reviewer: "Senior engineer reviewer: check maintainability, security, and Gradle conventions"
+  tester: "QA engineer: run ./gradlew test and validate DB connectivity"
+  reporter: "Documentation expert: convert Mermaid diagrams to PNG with mmdc and embed into reports"
 
 policies:
   language: "Java 17"
@@ -22,25 +17,18 @@ policies:
   db: "PostgreSQL 17"
   ui_guideline: "Google Todo-like minimal UI"
   layout: "/src-app for app code; /docs for documentation"
-  app-policy:
-    language: "Java 17"
-    build: "Gradle"
-    framework: "Spring Boot MVC (Thymeleaf)"
-    db: "PostgreSQL 17"
-    ui_guideline: "Google Todo-like minimal UI"
-    layout: "/src-app for app code; /docs for documentation"
+  app-policy: "app-policy"
 
 knowledge:
-  project-layout: project-structure
-  customer-reqs: requirements
+  project-structure: project-structure
+  requirements: requirements
 
 movements:
   - name: design
     persona: architect
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     policy: app-policy
     edit: true
-    allowed_tools: [Read, Glob, Bash, Write]
     timeout_minutes: 120
     on_failure: "ABORT"
     instruction: |
@@ -58,7 +46,6 @@ movements:
     persona: reporter
     policy: app-policy
     edit: true
-    allowed_tools: [Read, Glob, Bash, Write]
     timeout_minutes: 30
     on_failure: "ABORT"
     instruction: |
@@ -72,10 +59,9 @@ movements:
 
   - name: implement
     persona: developer
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     policy: app-policy
     edit: true
-    allowed_tools: [Read, Glob, Bash, Write]
     timeout_minutes: 240
     on_failure: "ABORT"
     instruction: |
@@ -88,9 +74,8 @@ movements:
 
   - name: review
     persona: reviewer
-    knowledge: [project-layout, customer-reqs]
+    knowledge: [project-structure, requirements]
     edit: true
-    allowed_tools: [Read, Glob, Edit, Bash]
     timeout_minutes: 60
     on_failure: "ABORT"
     instruction: "実装されたコードと Gradle 設定をレビューし、必要なら修正してください。"
@@ -102,9 +87,8 @@ movements:
 
   - name: test
     persona: tester
-    knowledge: [project-layout]
+    knowledge: [project-structure]
     edit: true
-    allowed_tools: [Read, Glob, Bash]
     timeout_minutes: 30
     on_failure: "ABORT"
     instruction: "`./gradlew test` を実行し、全テストをパスさせてください。"
