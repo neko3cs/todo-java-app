@@ -16,5 +16,5 @@
 
 - **言語**: Java 17
 - **フレームワーク**: Spring Boot 3.x (MVC構成）
-- **DB**: Cloud SQL (PostgreSQL 17)
+- **DB**: Cloud SQL (PostgreSQL 17) — 接続は Private IP を利用し、Public IP を無効化すること。接続は閉域網（VPC または Cloud Run の Serverless VPC Access 経由）に限定する。
 - **インフラ**: Google Cloud (Cloud Run, Load Balancer, Cloud Armor)

@@ -1,0 +1,231 @@
+diff --git a/.takt/pieces/dev-app.yaml b/.takt/pieces/dev-app.yaml
+--- a/.takt/pieces/dev-app.yaml
++++ b/.takt/pieces/dev-app.yaml
+@@ -1,108 +1,150 @@
+-1. name: dev-app
+-2. description: Java 17 / Spring Boot MVC (Gradle) 自律開発ピース
+-3. max_movements: 50
+-4. initial_movement: design
+-5. 
+-6. personas:
+-7.   architect:
+-8.     prompt: |
+-9.       あなたは Java / Spring Boot のシニアアーキテクトです。
+-10.       「Google Todo のようなシンプルさ」を追求し、クリーンな設計を行います。
+-11.   developer:
+-12.     prompt: |
+-13.       あなたは Java 17 と Spring Boot 3.x (Gradle) のエキスパートです。
+-14.       Thymeleaf を使用した MVC 実装と PostgreSQL 17 向けのデータアクセス層を構築します。
+-15.   reviewer:
+-16.     prompt: |
+-17.       あなたはシニアエンジニアです。
+-18.       コードの保守性、セキュリティ、および Java 17 / Gradle の規約準拠を厳格にチェックします。
+-19.   tester:
+-20.     prompt: |
+-21.       あなたは QA エンジニアです。
+-22.       `./gradlew test` を用いたユニットテスト実行と、DB接続の整合性検証を担当します。
+-23.   reporter:
+-24.     prompt: |
+-25.       あなたは技術ドキュメント作成の専門家です。
+-26.       Mermaid 図を `mmdc` コマンドで PNG 化し、設計書に埋め込みで顧客向けの最終レポートを完成させます。
+-27. 
+-28. policies:
+-29.   app-policy: |
+-30.     - 言語: Java 17 / ビルドツール: Gradle を厳守。
+-31.     - 構成: Spring Boot MVC (Thymeleaf) 統合。
+-32.     - DB: PostgreSQL 17 (Cloud SQL) を使用。
+-33.     - デザイン: Google Todo をベンチマークとした極シンプルな UI。
+-34.     - 配置: 全てのコードは `/src-app`、ドキュメントは `/docs` に配置。
+-35. 
+-36. knowledge:
+-37.   project-layout: project-structure
+-38.   customer-reqs: requirements
+-39. 
+-40. movements:
+-41.   - name: design
+-42.     persona: architect
+-43.     knowledge: [project-layout, customer-reqs]
+-44.     policy: app-policy
+-45.     edit: true
+-46.     allowed_tools: [Read, Glob, Bash, Write, WebSearch]
+-47.     instruction: |
+-48.       顧客要求に基づき、/docs/app-design.md に設計書を作成してください。
+-49.       - Mermaid 記法で ER図、画面遷移図、シーケンス図を記述。
+-50.       - 各図は別ファイル（*.mmd）としても保存すること。
+-51.       - Gradle のプロジェクト構成（依存関係）を決定すること。
+-52.     rules:
+-53.       - condition: "設計書と *.mmd ファイルが生成された"
+-54.         next: report
+-55.       - condition: "要件不明"
+-56.         next: ABORT
+-
+-57.   - name: report
+-58.     persona: reporter
+-59.     policy: app-policy
+-60.     edit: true
+-61.     allowed_tools: [Read, Glob, Bash, Write, Edit]
+-62.     instruction: |
+-63.       1. `/docs` 内の *.mmd ファイルを `mmdc` コマンドで PNG 化してください。
+-64.       2. 生成された PNG を `app-design.md` に埋め込み、見栄えを整えてください。
+-65.     rules:
+-66.       - condition: "設計書の PNG 埋め込みとドキュメント整形が完了した"
+-67.         next: implement
+-68.       - condition: "画像変換に失敗"
+-69.         next: ABORT
+-
+-70.   - name: implement
+-71.     persona: developer
+-72.     knowledge: [project-layout, customer-reqs]
+-73.     policy: app-policy
+-74.     edit: true
+-75.     allowed_tools: [Read, Glob, Bash, Write, Edit]
+-76.     instruction: |
+-77.       /docs/app-design.md に基づき、/src-app に Gradle プロジェクトを構築・実装してください。
+-78.       必ず Gradle Wrapper (`gradlew`) を含めて作成すること。
+-79.     rules:
+-80.       - condition: "ビルド可能な全コードの実装が完了した"
+-81.         next: review
+-
+-82.   - name: review
+-83.     persona: reviewer
+-84.     knowledge: [project-layout, customer-reqs]
+-85.     edit: true
+-86.     allowed_tools: [Read, Glob, Edit, Bash]
+-87.     instruction: "実装されたコードと Gradle 設定をレビューし、必要なら修正してください。"
+-88.     rules:
+-89.       - condition: "レビューをパスした"
+-90.         next: test
+-91.       - condition: "要修正"
+-92.         next: implement
+-
+-93.   - name: test
+-94.     persona: tester
+-95.     knowledge: [project-layout]
+-96.     edit: true
+-97.     allowed_tools: [Read, Glob, Bash]
+-98.     instruction: "`./gradlew test` を実行し、全テストをパスさせてください。"
+-99.     rules:
+-100.       - condition: "テスト成功"
+-101.         next: COMPLETE
+-102.       - condition: "テスト失敗"
+-103.         next: implement
++created
++1. name: dev-app
++2. description: Java 17 / Spring Boot MVC (Gradle) 自律開発ピース
++3. max_movements: 50
++4. initial_movement: design
++5. 
++6. personas:
++7.   architect:
++8.     prompt: "Java/Spring Boot senior architect: design clean Spring MVC applications"
++9.   developer:
++10.     prompt: "Java 17 / Spring Boot developer: implement MVC, Thymeleaf, PostgreSQL"
++11.   reviewer:
++12.     prompt: "Senior engineer reviewer: check maintainability, security, and Gradle conventions"
++13.   tester:
++14.     prompt: "QA engineer: run ./gradlew test and validate DB connectivity"
++15.   reporter:
++16.     prompt: "Documentation expert: convert Mermaid diagrams to PNG with mmdc and embed into reports"
++
++18. policies:
++19.   language: "Java 17"
++20.   build: "Gradle"
++21.   framework: "Spring Boot MVC (Thymeleaf)"
++22.   db: "PostgreSQL 17"
++23.   ui_guideline: "Google Todo-like minimal UI"
++24.   layout: "/src-app for app code; /docs for documentation"
++25.   app-policy:
++26.     language: "Java 17"
++27.     build: "Gradle"
++28.     framework: "Spring Boot MVC (Thymeleaf)"
++29.     db: "PostgreSQL 17"
++30.     ui_guideline: "Google Todo-like minimal UI"
++31.     layout: "/src-app for app code; /docs for documentation"
++
++36. knowledge:
++37.   project-layout: project-structure
++38.   customer-reqs: requirements
++
++40. movements:
++41.   - name: design
++42.     persona: architect
++43.     knowledge: [project-layout, customer-reqs]
++44.     policy: app-policy
++45.     edit: true
++46.     allowed_tools: [Read, Glob, Bash, Write]
++47.     timeout_minutes: 120
++48.     on_failure: "ABORT"
++49.     instruction: |
++50.       顧客要求に基づき、/docs/app-design.md に設計書を作成してください。
++51.       - Mermaid 記法で ER図、画面遷移図、シーケンス図を記述。
++52.       - 各図は別ファイル（*.mmd）としても保存すること。
++53.       - Gradle のプロジェクト構成（依存関係）を決定すること。
++54.     rules:
++55.       - condition: "設計書と *.mmd ファイルが生成された"
++56.         next: report
++57.       - condition: "要件不明"
++58.         next: ABORT
++
++60.   - name: report
++61.     persona: reporter
++62.     policy: app-policy
++63.     edit: true
++64.     allowed_tools: [Read, Glob, Bash, Write]
++65.     timeout_minutes: 30
++66.     on_failure: "ABORT"
++67.     instruction: |
++68.       1. `/docs` 内の *.mmd ファイルを `mmdc` コマンドで PNG 化してください。
++69.       2. 生成された PNG を `app-design.md` に埋め込み、見栄えを整えてください。
++70.     rules:
++71.       - condition: "設計書の PNG 埋め込みとドキュメント整形が完了した"
++72.         next: implement
++73.       - condition: "画像変換に失敗"
++74.         next: ABORT
++
++76.   - name: implement
++77.     persona: developer
++78.     knowledge: [project-layout, customer-reqs]
++79.     policy: app-policy
++80.     edit: true
++81.     allowed_tools: [Read, Glob, Bash, Write]
++82.     timeout_minutes: 240
++83.     on_failure: "ABORT"
++84.     instruction: |
++85.       /docs/app-design.md に基づき、/src-app に Gradle プロジェクトを構築・実装してください。
++86.       必ず Gradle Wrapper (`gradlew`) を含めて作成すること。
++87.       実行要件: JDK 17 がインストールされていること、ネットワークアクセスが依存解決に必要な場合があることを明記してください。
++88.     rules:
++89.       - condition: "ビルド可能な全コードの実装が完了した"
++90.         next: review
++
++92.   - name: review
++93.     persona: reviewer
++94.     knowledge: [project-layout, customer-reqs]
++95.     edit: true
++96.     allowed_tools: [Read, Glob, Edit, Bash]
++97.     timeout_minutes: 60
++98.     on_failure: "ABORT"
++99.     instruction: "実装されたコードと Gradle 設定をレビューし、必要なら修正してください。"
++100.     rules:
++101.       - condition: "レビューをパスした"
++102.         next: test
++103.       - condition: "要修正"
++104.         next: implement
++
++106.   - name: test
++107.     persona: tester
++108.     knowledge: [project-layout]
++109.     edit: true
++110.     allowed_tools: [Read, Glob, Bash]
++111.     timeout_minutes: 30
++112.     on_failure: "ABORT"
++113.     instruction: "`./gradlew test` を実行し、全テストをパスさせてください。"
++114.     rules:
++115.       - condition: "テスト成功"
++116.         next: COMPLETE
++117.       - condition: "テスト失敗"
++118.         next: implement
++
++# Commit message:
++# takt: dev-app ペルソナ簡潔化・ポリシー構造化・movement タイムアウト追加
++# Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

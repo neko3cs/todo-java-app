@@ -1,0 +1,33 @@
+*** a/.takt/facets/knowledge/project-structure.md
+*** b/.takt/facets/knowledge/project-structure.md
+@@
+-# プロジェクトフォルダー構成定義
+-
+-このプロジェクトでは、以下のフォルダー構成を厳守してください。
+-
+-- `/docs`: 設計書（Markdown, PNG等）を配置する。
+-- `/src-infra`: すべてのTerraformコード (.tf) を配置する。
+-- `/src-app/`: Webアプリのコードを配置する。
+-
+-新しいファイルを作成する際は、必ず上記のルールに従ったパスに配置してください。
++# プロジェクトフォルダー構成定義
++
++このプロジェクトでは、以下のフォルダー構成を厳守してください。
++
++- `/docs`: 設計書（Markdown, PNG等）を配置する。
++- `/src-infra`: すべてのTerraformコード (.tf) を配置する。
++- `/src-app/`: Webアプリのコードを配置する。
++
++新しいファイルを作成する際は、必ず上記のルールに従ったパスに配置してください。
++
++## 新規作成時のPRチェックリスト
++- 変更されたファイルは `/src-app/`, `/src-infra/` または `/docs/` のいずれかに配置されていること。
++- 新規ファイルは必要なテストを同時に追加していること（ユニット/統合/設定ファイルなど）。
++- 外部依存を追加する場合は、理由と互換性への影響を PR 説明に明記していること。
++- インフラ変更は `terraform plan` の出力スナップショットを添付していること。
++- ドキュメント変更は `docs/` 内に一貫した場所へ保存し、設計図は *.mmd と PNG を含めること。
++- CIが実行可能であること（テンプレートの更新がある場合はワークフロー変更を含める）。
+
+# Commit message:
+# takt: project-structure に PR チェックリストを追加
+# Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

@@ -5,29 +5,28 @@ initial_movement: design
 
 personas:
   implementer:
-    prompt: |
-      あなたは Terraform と Google Cloud の実装スペシャリストです。
-      HCLコードの記述、リソースの依存関係の整理、および `gcloud` コマンドによる環境確認が得意です。
+    prompt: "Terraform and Google Cloud implementer: author HCL and validate resources with gcloud"
   reviewer:
-    prompt: |
-      あなたは Terraform と Google Cloud アーキテクチャのエキスパートです。
-      セキュリティ、保守性、および Google Cloud のベストプラクティスの観点からコードを厳格にレビューします。
+    prompt: "Terraform reviewer: check security, maintainability, and GCP best practices"
   tester:
-    prompt: |
-      あなたは IaC の品質保証スペシャリストです。
-      `terraform plan` の結果検証や、構築後のリソースが設計通り（閉域網設定など）になっているか Bash 等を用いてテストします。
+    prompt: "IaC QA specialist: run terraform plan and verify closed-network configuration"
   reporter:
-    prompt: |
-      あなたは技術ドキュメント作成の専門家です。
-      提供された情報から高品質な設計書を作成し、Mermaid図を適切に埋め込みます。
+    prompt: "Documentation expert: embed Mermaid diagrams into Markdown reports"
 
 policies:
-  infra-policy: |
-    - Cloud Run: 閉域網（Ingress=internal-and-cloud-load-balancing）を徹底する。
-    - Cloud SQL: PostgreSQL 17を使用。Private IPによる接続とし、Public IPは無効化する。
-    - Cloud SQL Admin API を有効化し、Cloud SQL Studio を利用可能にする。
-    - Load Balancer: HTTPS通信とし、Cloud Armor (WAF) で保護する。
-    - プロジェクトIDはアクティブな `gcloud` 設定から取得し、ハードコードしない。
+  language: "Terraform"
+  build: "N/A"
+  framework: "Google Cloud Platform / Terraform"
+  db: "Cloud SQL (PostgreSQL 17, Private IP)"
+  ui_guideline: "n/a"
+  layout: "/src-infra for Terraform .tf files"
+  infra-policy:
+    language: "Terraform"
+    build: "N/A"
+    framework: "Google Cloud Platform / Terraform"
+    db: "Cloud SQL (PostgreSQL 17, Private IP)"
+    ui_guideline: "n/a"
+    layout: "/src-infra for Terraform .tf files"
 
 knowledge:
   project-layout: project-structure
@@ -40,6 +39,8 @@ movements:
     policy: infra-policy
     edit: true
     allowed_tools: [Read, Glob, Grep, Bash, WebSearch, WebFetch, Write]
+    timeout_minutes: 120
+    on_failure: "ABORT"
     instruction: |
       以下のアーキテクチャに基づき、Terraformの構成案を作成してください。
       設計書は Markdown 形式で出力し、Mermaid記法（flowchart, graph, sequenceなど）を用いて図を記述してください。
@@ -62,7 +63,16 @@ movements:
     knowledge: [project-layout, customer-reqs]
     policy: infra-policy
     edit: true
-    allowed_tools: [Read, Glob, Bash, Write, Edit]
+    allowed_tools: [Read, Glob, Bash, Write]
+    timeout_minutes: 30
+    on_failure: "ABORT"
+    install_hint: |
+      If `mmdc` is not available, prefer containerized execution in CI or developer machines. Examples:
+      - POSIX/CI: `docker run --rm -v "$(pwd)":/data minified/mmdc mmdc -i input.mmd -o output.png`
+        Ensure the CI job uses the repository workspace as the container volume (e.g. `$CI_WORKSPACE` mounted to `/data`).
+      - Windows (PowerShell): adjust volume mapping, e.g. `docker run --rm -v ${PWD}:/data minified/mmdc mmdc -i input.mmd -o output.png`.
+      - Alternatively, install globally via npm: `npm install -g @mermaid-js/mermaid-cli`.
+      Note: ensure CI provides necessary environment variables and that Docker is available in the runner.
     instruction: |
       designフェーズで作成された設計書とMermaid図（*.mmdファイル）を受け取りました。
 
@@ -82,7 +92,9 @@ movements:
     knowledge: [project-layout, customer-reqs]
     policy: infra-policy
     edit: true
-    allowed_tools: [Read, Glob, Grep, Bash, Write, Edit]
+    allowed_tools: [Read, Glob, Grep, Bash, Write]
+    timeout_minutes: 240
+    on_failure: "ABORT"
     instruction: "設計に基づき、Terraformコード (.tfファイル) を作成・修正してください。"
     rules:
       - condition: "コードの記述が完了した"
@@ -94,6 +106,8 @@ movements:
     policy: infra-policy
     edit: true
     allowed_tools: [Read, Glob, Grep, Bash, Edit]
+    timeout_minutes: 60
+    on_failure: "ABORT"
     instruction: |
       実装されたコードをレビューしてください。特に以下の点を重点的にチェックします：
       - Cloud Run/SQL が意図せず公開されていないか
@@ -112,6 +126,8 @@ movements:
     policy: infra-policy
     edit: true
     allowed_tools: [Read, Glob, Grep, Bash]
+    timeout_minutes: 30
+    on_failure: "ABORT"
     instruction: |
       `terraform plan` を実行して構成の整合性を確認してください。
       また、セキュリティ設定（隔離環境）がポリシーに準拠しているか静的解析やコマンドで検証してください。
