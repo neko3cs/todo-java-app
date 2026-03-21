@@ -1,0 +1,43 @@
+flowchart LR
+  subgraph External
+    Client["External Client (Internet)"]
+  end
+
+  subgraph GCLB["Global HTTP(S) Load Balancer"]
+    direction TB
+    GFW["Global Forwarding Rule"]
+    TS["Target HTTPS Proxy / URL Map"]
+    BS["Backend Service (Serverless NEG)"]
+    CA["Cloud Armor Security Policy"]
+  end
+
+  subgraph VPC["VPC (Private Network)"]
+    direction TB
+    Connector["Serverless VPC Access Connector"]
+    subgraph Private["Private Resources"]
+      CR["Cloud Run (private ingress)"]
+      SQL["Cloud SQL (Postgres 17) - Private IP"]
+    end
+  end
+
+  Client -->|HTTPS| GFW
+  GFW --> TS
+  TS --> BS
+  BS -->|Serverless NEG| CR
+  BS ---|attached| CA
+
+  CR -->|connects via Private IP| SQL
+  CR ---|uses| Connector
+  Connector --- VPC
+
+  %% Required APIs
+  classDef apis fill:#f9f,stroke:#333,stroke-width:1px;
+  APIS[("Required APIs:\nrun.googleapis.com\nsqladmin.googleapis.com\ncompute.googleapis.com\nservicenetworking.googleapis.com\niam.googleapis.com")]
+  APIS:::apis
+  APIS -.-> CA
+  APIS -.-> CR
+  APIS -.-> SQL
+
+  style GCLB fill:#eef,stroke:#333
+  style VPC fill:#efe,stroke:#333
+  style Private fill:#fffdf0,stroke:#333

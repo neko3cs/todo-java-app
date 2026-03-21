@@ -1,0 +1,27 @@
+flowchart LR
+  Internet((Internet)) --> LB["HTTP(S) Load Balancer\n(Global)"]
+  LB --> Armor["Cloud Armor\n(Security Policy)"]
+  Armor --> Backend["Backend Service\n(Serverless NEG)"]
+  Backend --> NEG["Serverless NEG\n(network endpoint group)"]
+  NEG --> CR["Cloud Run\n(internal) "]
+  CR -->|Private VPC| VPC["VPC Network"]
+  VPC --> SQL["Cloud SQL\n(Postgres 17, Private IP)"]
+
+  subgraph APIs [Required APIs]
+    direction TB
+    APISVC1["run.googleapis.com"]
+    APISVC2["sqladmin.googleapis.com"]
+    APISVC3["compute.googleapis.com"]
+    APISVC4["servicenetworking.googleapis.com"]
+  end
+
+  APISVC1 --> CR
+  APISVC2 --> SQL
+  APISVC3 --> LB
+  APISVC4 --> SQL
+
+  style Internet fill:#f9f,stroke:#333,stroke-width:1px
+  style LB fill:#bbf,stroke:#333
+  style Armor fill:#fdd,stroke:#900
+  style CR fill:#dfd,stroke:#060
+  style SQL fill:#ffd,stroke:#aa0
